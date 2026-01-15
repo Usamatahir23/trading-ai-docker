@@ -19,8 +19,8 @@ RUN rm -f /usr/bin/python /usr/bin/python3 && \
     ln -s /usr/bin/python3.11 /usr/bin/python3
 
 # Install pip for python3.11
-RUN python3.11 -m ensurepip --upgrade && \
-    python3.11 -m pip install --upgrade pip setuptools wheel
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11 && \
+    python3.11 -m pip install --no-cache-dir --upgrade pip setuptools wheel
 
 # Copy requirements first for better caching
 COPY requirements.txt* ./
