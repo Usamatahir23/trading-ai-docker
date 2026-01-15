@@ -18,15 +18,19 @@ RUN rm -f /usr/bin/python /usr/bin/python3 && \
     ln -s /usr/bin/python3.11 /usr/bin/python && \
     ln -s /usr/bin/python3.11 /usr/bin/python3
 
+# Install pip for python3.11
+RUN python3.11 -m ensurepip --upgrade && \
+    python3.11 -m pip install --upgrade pip setuptools wheel
+
 # Copy requirements first for better caching
 COPY requirements.txt* ./
 
 # Install Python dependencies
-RUN pip install --no-cache-dir --upgrade pip && \
-    if [ -f requirements.txt ]; then pip install --no-cache-dir -r requirements.txt; fi
+RUN python3.11 -m pip install --no-cache-dir --upgrade pip && \
+    if [ -f requirements.txt ]; then python3.11 -m pip install --no-cache-dir -r requirements.txt; fi
 
-# Install common trading libraries with GPU support
-RUN pip install --no-cache-dir \
+# Install common trading libraries
+RUN python3.11 -m pip install --no-cache-dir \
     pandas \
     numpy \
     matplotlib \
@@ -35,9 +39,17 @@ RUN pip install --no-cache-dir \
     yfinance \
     ta \
     jupyter \
-    notebook \
+    notebook
+
+# Install PyTorch with CUDA 12.1 support
+RUN python3.11 -m pip install --no-cache-dir \
     torch \
-    tensorflow
+    torchvision \
+    torchaudio \
+    --index-url https://download.pytorch.org/whl/cu121
+
+# Install TensorFlow (will use GPU if CUDA is available)
+RUN python3.11 -m pip install --no-cache-dir tensorflow
 
 # Copy application code
 COPY . .
