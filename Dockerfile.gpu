@@ -1,0 +1,48 @@
+# NVIDIA CUDA GPU-optimized Docker image for Trading AI
+FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04
+
+# Set working directory
+WORKDIR /app
+
+# Install Python 3.11
+RUN apt-get update && apt-get install -y \
+    python3.11 \
+    python3.11-dev \
+    python3-pip \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create symlinks for python
+RUN ln -s /usr/bin/python3.11 /usr/bin/python && \
+    ln -s /usr/bin/python3.11 /usr/bin/python3
+
+# Copy requirements first for better caching
+COPY requirements.txt* ./
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    if [ -f requirements.txt ]; then pip install --no-cache-dir -r requirements.txt; fi
+
+# Install common trading libraries with GPU support
+RUN pip install --no-cache-dir \
+    pandas \
+    numpy \
+    matplotlib \
+    seaborn \
+    scikit-learn \
+    yfinance \
+    ta \
+    jupyter \
+    notebook \
+    torch \
+    tensorflow
+
+# Copy application code
+COPY . .
+
+# Expose Jupyter port
+EXPOSE 8888
+
+# Default command
+CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]

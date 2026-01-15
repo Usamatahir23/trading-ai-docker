@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  trading-ai-cpu:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: trading-ai-cpu
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./examples:/app/examples
+      - ./notebooks:/app/notebooks
+      - ./data:/app/data
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+    restart: unless-stopped
+
+  trading-ai-gpu:
+    build:
+      context: .
+      dockerfile: Dockerfile.gpu
+    container_name: trading-ai-gpu
+    ports:
+      - "8889:8888"
+    volumes:
+      - ./examples:/app/examples
+      - ./notebooks:/app/notebooks
+      - ./data:/app/data
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+    profiles:
+      - gpu
